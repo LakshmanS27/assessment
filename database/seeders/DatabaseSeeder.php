@@ -23,5 +23,9 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call(KeywordsTableSeeder::class);
+
+    
+        $this->call(AssessmentQuestionSeeder::class);
+
     }
 }

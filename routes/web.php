@@ -7,24 +7,22 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
 // Homepage
-Route::get('/', fn() => view('welcome'));
+Route::get('/', fn () => view('welcome'));
 
-// Guest routes (not logged in)
+// Guest routes
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AssessmentController::class, 'showLoginForm'])->name('login');
     Route::get('login/microsoft', [MicrosoftController::class, 'redirectToProvider'])->name('login.microsoft');
     Route::get('login/microsoft/callback', [MicrosoftController::class, 'handleProviderCallback']);
 });
 
-// Authenticated routes (logged in)
+// Authenticated routes
 Route::middleware('auth')->group(function () {
 
-    // Dashboard (admin only)
     Route::get('/dashboard', [AssessmentController::class, 'index'])
         ->name('dashboard')
         ->middleware('role:admin');
 
-    // Resume upload (user only)
     Route::get('/resumeup', [ResumeUploadController::class, 'create'])
         ->name('resume.upload.form')
         ->middleware('role:user');
@@ -33,7 +31,27 @@ Route::middleware('auth')->group(function () {
         ->name('resume.upload.store')
         ->middleware('role:user');
 
-    // Logout (works for both admin dashboard & user resume upload)
+    // Assessment
+    Route::get('/assessment', [AssessmentController::class, 'show'])
+        ->name('assessment.start');
+
+    // Autosave (NEW)
+    Route::post('/assessment/autosave', [AssessmentController::class, 'autosave'])
+        ->name('assessment.autosave');
+
+    // Final submit
+    Route::post('/assessment/submit', [AssessmentController::class, 'submit'])
+        ->name('assessment.submit');
+
+    // Results
+    Route::get('/assessment/results', [AssessmentController::class, 'results'])
+        ->name('assessment.results');
+    
+    Route::get('/assessment/results/{id}', [AssessmentController::class, 'viewResult'])
+    ->name('assessment.results')
+    ->middleware('role:admin');
+
+    // Logout
     Route::post('/logout', function () {
         Auth::logout();
         request()->session()->invalidate();
