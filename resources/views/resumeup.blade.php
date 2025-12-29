@@ -28,6 +28,14 @@
                 </div>
                 <div class="card-body p-4">
 
+                    <!-- Display Duplicate / Other Errors -->
+                    @if(session('error'))
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            {{ session('error') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    @endif
+
                     <!-- Validation Errors -->
                     @if ($errors->any())
                         <div class="alert alert-danger alert-dismissible fade show">
@@ -58,62 +66,64 @@
             </div>
 
             <!-- RESULT CARD -->
-           @if(session('result'))
-    <div class="card mt-4 shadow border-0">
-        <div class="card-body">
-            <!-- Existing resume status and matched skills display -->
+            @if(session('result'))
+                <div class="card mt-4 shadow border-0">
+                    <div class="card-body">
 
-            <h5 class="mb-3">
-                Resume Status:
-                <span class="badge 
-                    {{ session('result.status') === 'valid' ? 'bg-success' : 'bg-danger' }}">
-                    {{ ucfirst(session('result.status')) }}
-                </span>
-            </h5>
+                        <!-- Resume Status -->
+                        <h5 class="mb-3">
+                            Resume Status:
+                            <span class="badge 
+                                {{ session('result.status') === 'valid' ? 'bg-success' : 'bg-danger' }}">
+                                {{ ucfirst(session('result.status')) }}
+                            </span>
+                        </h5>
 
-            <!-- Match Percentage and progress bar -->
-            <p><strong>Match Percentage:</strong> {{ session('result.percentage') }}%</p>
+                        <!-- Match Percentage -->
+                        <p><strong>Match Percentage:</strong> {{ session('result.percentage') }}%</p>
+                        <div class="progress mb-3">
+                            <div class="progress-bar 
+                                {{ session('result.status') === 'valid' ? 'bg-success' : 'bg-danger' }}"
+                                style="width: {{ session('result.percentage') }}%">
+                                {{ session('result.percentage') }}%
+                            </div>
+                        </div>
 
-            <div class="progress mb-3">
-                <div class="progress-bar 
-                    {{ session('result.status') === 'valid' ? 'bg-success' : 'bg-danger' }}"
-                    style="width: {{ session('result.percentage') }}%">
-                    {{ session('result.percentage') }}%
+                        <!-- Matched Skills -->
+                        <p><strong>Matched Skills:</strong></p>
+                        @if(count(session('result.matched_skills')) > 0)
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                @foreach(session('result.matched_skills') as $skill)
+                                    <span class="badge bg-secondary">{{ ucfirst($skill) }}</span>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-muted">No matching skills found.</p>
+                        @endif
+
+                        <hr>
+
+                        <!-- Proceed or Retry -->
+                        @if(session('result.status') === 'valid')
+                            <div class="d-grid">
+                                <a href="{{ route('assessment.start') }}" class="btn btn-success btn-lg">
+                                    Proceed to Assessment
+                                </a>
+                            </div>
+                        @else
+                            <div class="alert alert-warning text-center mb-0">
+                                Your resume did not meet the criteria.  
+                                <strong>Please try uploading again.</strong>
+                            </div>
+                        @endif
+
+                    </div>
                 </div>
-            </div>
-
-            <!-- Matched Skills -->
-            <p><strong>Matched Skills:</strong></p>
-            @if(count(session('result.matched_skills')) > 0)
-                <div class="d-flex flex-wrap gap-2 mb-3">
-                    @foreach(session('result.matched_skills') as $skill)
-                        <span class="badge bg-secondary">{{ ucfirst($skill) }}</span>
-                    @endforeach
-                </div>
-            @else
-                <p class="text-muted">No matching skills found.</p>
             @endif
-
-            <!-- Button or message -->
-            <hr>
-
-            @if(session('result.status') === 'valid')
-            <div class="d-grid">
-                <a href="{{ route('assessment.start') }}" class="btn btn-success btn-lg">
-                    Proceed to Assessment
-                </a>
-            </div>
-            @else
-            <div class="alert alert-warning text-center mb-0">
-                Your resume did not meet the criteria.  
-                <strong>Please try uploading again.</strong>
-             </div>
-            @endif
-
 
         </div>
     </div>
-@endif
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>

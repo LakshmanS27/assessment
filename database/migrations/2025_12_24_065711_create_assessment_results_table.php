@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // link to users
             $table->json('answers'); // user answers stored as JSON
+            $table->json('question_ids')->nullable();
             $table->integer('total_questions')->default(0);
             $table->integer('correct_answers')->default(0);
             $table->integer('wrong_answers')->default(0);

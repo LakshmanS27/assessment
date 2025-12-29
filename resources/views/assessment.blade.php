@@ -1,124 +1,221 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Assessment</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
 <style>
-body { background: linear-gradient(to right, #e0eafc, #cfdef3); min-height: 100vh; font-family: 'Segoe UI', sans-serif; }
-.card { border-radius: 15px; }
-#instructions ul { padding-left: 1.5rem; }
-.question-container {
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-    min-height: 250px;
-    max-width: 900px;
-    margin: 0 auto;
+body {
+    background: linear-gradient(135deg, #e0eafc, #cfdef3);
+    font-family: 'Segoe UI', sans-serif;
 }
-.form-check-input { width: 22px; height: 22px; cursor: pointer; }
-.form-check-input:checked { background-color: #0d6efd; border-color: #0d6efd; }
-.form-check-label { cursor: pointer; font-weight: 500; }
-#timer { font-weight: bold; font-size: 1.2rem; color: #ff6b6b; }
-#reviewPanel { background: #fff; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); padding: 25px; margin-bottom: 20px; display: none; }
-.card-header { background: linear-gradient(135deg, #6a11cb, #2575fc); color: #fff; }
-.btn-gradient { background: linear-gradient(135deg, #ff758c, #ff7eb3); border: none; color: white; }
+
+/* Main Card */
+.card {
+    border-radius: 16px;
+}
+
+/* Header */
+.card-header {
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+}
+
+/* Question Panel */
+.question-box {
+    background: #fff;
+    border-radius: 14px;
+    padding: 30px;
+    min-height: 260px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+
+/* Palette */
+.palette-box {
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
 
 /* Quiz Nav Buttons */
 #quizNav button {
-    width: 45px;
-    height: 45px;
+    height: 42px;
     font-weight: 600;
-    padding: 0;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
-    cursor: pointer;
 }
-/* States */
-#quizNav button.current { background-color: white !important; color: black !important; border: 2px solid #0d6efd !important; }
-#quizNav button.answered { background-color: #198754 !important; color: white !important; border-color: #198754 !important; }
-#quizNav button.not-answered { background-color: #6c757d !important; color: white !important; border-color: #6c757d !important; } /* grey for first time */
-#quizNav button.skipped { background-color: #dc3545 !important; color: white !important; border-color: #dc3545 !important; }
+
+/* Timer */
+#timer {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #dc3545;
+}
+
+/* Violation Warning */
+#violationWarning {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffc107;
+    color: #000;
+    padding: 10px 20px;
+    border-radius: 8px;
+    display: none;
+    z-index: 9999;
+    font-weight: 600;
+}
 </style>
 </head>
 <body>
 
+<div id="violationWarning"></div>
+
 <div class="container py-5">
-<div class="row justify-content-center">
-<div class="col-lg-10 col-md-12">
 
 <form action="{{ route('logout') }}" method="POST" class="text-end mb-3">
-@csrf
-<button type="submit" class="btn btn-danger btn-sm">Logout</button>
+    @csrf
+    <button type="submit" class="btn btn-danger btn-sm">Logout</button>
 </form>
 
 <div class="card shadow-lg border-0">
-<div class="card-header text-center">
-<h3 class="mb-0">Assessment</h3>
-<p class="mb-0 small">Answer the questions carefully</p>
-</div>
+    <div class="card-header text-center text-white">
+        <h4 class="mb-0">Assessment</h4>
+        <small>Answer the questions carefully</small>
+    </div>
 
-<div class="card-body p-4">
+    <div class="card-body p-4">
 
+<!-- Instructions -->
 <div id="instructions" class="text-center">
-<h4 class="mb-3 text-primary">Assessment Instructions</h4>
-<ul class="text-start">
-<li>20 questions</li>
-<li>15 minutes</li>
-<li>No refresh</li>
+    <h5 class="text-primary mb-3">Assessment Instructions</h5>
+<ul class="text-start mb-3 ps-3">
+    <li>The assessment will comprise of <strong>Objective type Multiple Choice Questions (MCQs)</strong> and <strong>Text Input type Q/A</strong>.</li>
+    <li>Total Questions to be attended are <strong>20</strong>.</li>
+    <li>Duration of the assessment: <strong>15 minutes</strong>.</li>
+    <li>All questions are <strong>compulsory</strong> and each carries <strong>one mark</strong>.</li>
+    <li>There will be <strong>no negative marking</strong> for wrong answers.</li>
+    <li>Each student will receive questions and answers in a <strong>different order</strong>, selected randomly from a <strong>fixed question databank</strong>.</li>
+    <li>The assessment does not require using any <strong>paper, pen, pencil, or calculator</strong>.</li>
+    <li>The answers can be <strong>changed at any time</strong> during the assessment and are <strong>saved automatically</strong>.</li>
+    <li>It is possible to <strong>review both answered and unanswered questions</strong> at any time.</li>
+    <li>The assessment will <strong>automatically close</strong> when the time limit is over.  
+        If the examinee finishes early, they can quit by pressing the <strong>“Finish and Submit” button</strong>.</li>
+    <li>The examinee can navigate to the <strong>first, last, previous, next, or any unanswered question</strong> using the buttons on screen or the navigation bar throughout the assessment.</li>
+    <li>The <strong>time of the assessment begins only when the “Start Assessment” button</strong> is pressed.</li>
+    <li><strong>No page refresh or back navigation</strong> is allowed.</li>
 </ul>
-<button id="startAssessment" class="btn btn-gradient btn-lg mt-3">Start Assessment</button>
+
+<h5 class="text-danger mb-3">Important Warnings</h5>
+<ul class="text-start mb-3 ps-3">
+    <li><strong>Right-click</strong> is disabled during the assessment.</li>
+    <li><strong>Copying and pasting</strong> content is blocked.</li>
+    <li><strong>Keyboard shortcuts</strong> (e.g., Ctrl+C, Ctrl+V, Ctrl+X) are disabled.</li>
+    <li>Switching tabs or leaving the window will be <strong>detected</strong>.</li>
+    <li><strong>Warnings</strong> will be issued for any violations of these rules.</li>
+    <li>The assessment will be <strong>auto-submitted</strong> if the time expires or if violations occur repeatedly.</li>
+</ul>
+
+<div class="mt-3">
+    <button id="startAssessment" class="btn btn-primary btn-lg">
+        Start Assessment
+    </button>
+</div>
 </div>
 
-<div id="reviewPanel">
-<h4 class="text-primary mb-3">Review Your Answers</h4>
-<table class="table table-bordered" id="reviewTable">
-<thead>
-<tr><th>Question</th><th>Status</th></tr>
-</thead>
-<tbody></tbody>
-</table>
-<div class="d-flex justify-content-between">
-<button id="goBackBtn" class="btn btn-secondary">Go Back</button>
-<button id="submitBtn" class="btn btn-gradient">Submit</button>
-</div>
-</div>
+<!-- Review Panel -->
+<div id="reviewPanel" class="d-none">
+    <h5 class="text-primary mb-3">Review Answers</h5>
+    <table class="table table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>Question</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="reviewTableBody"></tbody>
+    </table>
 
-<div id="assessmentQuestions" style="display:none;">
-
-    <!-- Quiz Navigation -->
-    <div id="quizNav" class="d-flex gap-2 flex-wrap mb-3 justify-content-center"></div>
-
-    <div class="question-container" id="questionContainer"></div>
-
-    <div class="d-flex justify-content-between mt-3">
-        <button id="prevBtn" class="btn btn-secondary" disabled>Previous</button>
-        <button id="nextBtn" class="btn btn-gradient">Next</button>
+    <div class="d-flex justify-content-between">
+        <button id="goBackBtn" class="btn btn-secondary">Go Back</button>
+        <button id="submitBtn" class="btn btn-success">Submit</button>
     </div>
+</div>
 
-    <div class="mt-3 text-center">
-        Time left: <span id="timer">15:00</span>
+<!-- Assessment -->
+<div id="assessmentQuestions" class="d-none">
+    <div class="row g-4">
+        <!-- LEFT -->
+        <div class="col-md-9">
+            <div class="question-box">
+                <div id="questionContainer"></div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button id="prevBtn" class="btn btn-outline-secondary" disabled>
+                        Previous
+                    </button>
+                    <button id="nextBtn" class="btn btn-primary">
+                        Next
+                    </button>
+                </div>
+
+                <div class="text-center mt-3">
+                    Time left: <span id="timer">15:00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="col-md-3">
+            <div class="palette-box position-sticky top-0">
+                <h6 class="text-center fw-bold mb-3">Navigation Panel</h6>
+                <div id="quizNav" class="d-grid gap-2 mb-4" style="grid-template-columns: repeat(4,1fr);"></div>
+                <div class="small">
+                    <div class="mb-1"><span class="badge bg-success me-2">&nbsp;</span> Answered</div>
+                    <div class="mb-1"><span class="badge bg-secondary me-2">&nbsp;</span> Not Attempted</div>
+                    <div class="mb-1"><span class="badge bg-danger me-2">&nbsp;</span> Skipped</div>
+                    <div><span class="badge bg-light border border-primary me-2">&nbsp;</span> Current</div>
+                </div>
+            </div>
+        </div>
     </div>
-
 </div>
 
-</div>
-</div>
 </div>
 </div>
 </div>
 
 <script>
-const questions = @json($questions);
+// --- Initialization & Data Persistence ---
+let questions = @json($questions);
 
-let currentIndex = 0;
-let answers = {};
-let visited = {}; // tracks if user opened question
-let timer, autoSaveTimer;
-let timeLeft = 15 * 60;
+// Check if we have a saved version of questions to prevent re-shuffling on refresh
+const savedQuestions = sessionStorage.getItem('assessment_questions');
+if (savedQuestions) {
+    questions = JSON.parse(savedQuestions);
+} else {
+    // Save the initial set of questions provided by the server
+    sessionStorage.setItem('assessment_questions', JSON.stringify(questions));
+}
+
+let currentIndex = parseInt(localStorage.getItem('currentIndex')) || 0;
+let answers = JSON.parse(localStorage.getItem('answers')) || {};
+let visited = JSON.parse(localStorage.getItem('visited')) || {};
+let timer;
+
+// Timer Logic: Check for saved time, otherwise default to 15 mins
+const totalInitialTime = 15 * 60;
+let timeLeft = localStorage.getItem('timeLeft') ? parseInt(localStorage.getItem('timeLeft')) : totalInitialTime;
+
+// IMMEDIATELY update the display to prevent seeing "15:00"
+function updateTimerDisplay() {
+    const mins = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+    const secs = String(timeLeft % 60).padStart(2, '0');
+    document.getElementById('timer').textContent = `${mins}:${secs}`;
+}
+updateTimerDisplay(); // Run this right away
 
 const instructionsDiv = document.getElementById('instructions');
 const assessmentDiv = document.getElementById('assessmentQuestions');
@@ -127,80 +224,170 @@ const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 const timerSpan = document.getElementById('timer');
 const reviewPanel = document.getElementById('reviewPanel');
-const reviewTableBody = document.querySelector('#reviewTable tbody');
-const goBackBtn = document.getElementById('goBackBtn');
-const submitBtn = document.getElementById('submitBtn');
+const reviewTableBody = document.getElementById('reviewTableBody');
 const quizNav = document.getElementById('quizNav');
+const violationWarning = document.getElementById('violationWarning');
 
+let violations = parseInt(localStorage.getItem('violations')) || 0;
+const maxViolations = 3;
+let lastViolationTime = 0;
+const violationCooldown = 500;
+let assessmentStarted = localStorage.getItem('assessmentStarted') === 'true';
+
+// --- Logic for Page Load ---
+window.onload = () => {
+    if (assessmentStarted) {
+        // Resume assessment automatically if it was already started
+        instructionsDiv.classList.add('d-none');
+        assessmentDiv.classList.remove('d-none');
+        initQuizNav();
+        renderQuestion();
+        startTimer();
+        initViolations();
+
+        // Prevent browser back button
+        window.history.pushState(null, null, window.location.href);
+        window.onpopstate = function(event) {
+            autoSubmitAssessment();
+        };
+    }
+};
+
+
+// Start assessment
 document.getElementById('startAssessment').onclick = () => {
-    instructionsDiv.style.display = 'none';
-    assessmentDiv.style.display = 'block';
+    instructionsDiv.classList.add('d-none');
+    assessmentDiv.classList.remove('d-none');
+    assessmentStarted = true;
+    localStorage.setItem('assessmentStarted', 'true');
     initQuizNav();
     renderQuestion();
     startTimer();
-    startAutoSave();
+    initViolations();
+
+    // Prevent browser back button
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = function(event) {
+        autoSubmitAssessment();
+    };
 };
 
-// Initialize quiz navigation buttons
+
+function initViolations() {
+    document.addEventListener('contextmenu', e => {
+        if (!assessmentStarted) return;
+        e.preventDefault();
+        handleViolation('Right-click is disabled!');
+    });
+
+    ['copy', 'paste', 'cut'].forEach(ev => {
+        document.addEventListener(ev, e => {
+            if (!assessmentStarted) return;
+            e.preventDefault();
+            handleViolation('Copying and pasting is disabled!');
+        });
+    });
+
+    document.addEventListener('keydown', e => {
+        if (!assessmentStarted) return;
+        if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x', 'a'].includes(e.key.toLowerCase())) {
+            e.preventDefault();
+            handleViolation('Keyboard shortcuts are disabled!');
+        }
+    });
+
+    window.addEventListener('blur', () => {
+        if (!assessmentStarted) return;
+        handleViolation('Switching tabs or leaving the window is not allowed!');
+    });
+}
+
+function handleViolation(message) {
+    const now = Date.now();
+    if (now - lastViolationTime < violationCooldown) return;
+    lastViolationTime = now;
+    violations++;
+    localStorage.setItem('violations', violations); // Persist violation count
+    
+    showViolation(`Warning ${violations}: ${message}`);
+    if (violations >= maxViolations) autoSubmitAssessment();
+}
+
+function showViolation(message) {
+    violationWarning.textContent = message;
+    violationWarning.style.display = 'block';
+    setTimeout(() => violationWarning.style.display = 'none', 3000);
+}
+
+// Timer with Persistence
+function startTimer() {
+    timer = setInterval(() => {
+        timeLeft--;
+        localStorage.setItem('timeLeft', timeLeft); // Save time every second
+        
+        const mins = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+        const secs = String(timeLeft % 60).padStart(2, '0');
+        timerSpan.textContent = `${mins}:${secs}`;
+
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            submitAssessment(true);
+        }
+    }, 1000);
+}
+
 function initQuizNav() {
     quizNav.innerHTML = '';
     questions.forEach((q, i) => {
         const btn = document.createElement('button');
         btn.textContent = i + 1;
-        btn.classList.add('btn','btn-sm','not-answered'); // initial grey
-
-        btn.onclick = () => {
-            saveAnswer();
-            visited[currentIndex] = true;
-            currentIndex = i;
-            renderQuestion();
+        btn.className = 'btn btn-sm btn-secondary mx-1 mb-1';
+        btn.onclick = () => { 
+            saveAnswer(); 
+            visited[currentIndex] = true; 
+            currentIndex = i; 
+            localStorage.setItem('currentIndex', currentIndex);
+            renderQuestion(); 
         };
-
         quizNav.appendChild(btn);
     });
     updateQuizNav();
 }
 
 function updateQuizNav() {
-    const buttons = quizNav.querySelectorAll('button');
-    buttons.forEach((btn, i) => {
-        btn.classList.remove('current','answered','not-answered','skipped');
-
+    quizNav.querySelectorAll('button').forEach((btn, i) => {
         const qid = questions[i].id;
-        if (i === currentIndex) {
-            btn.classList.add('current');
-        } else if (answers[qid] && answers[qid].length > 0) {
-            btn.classList.add('answered');
-        } else if (visited[i]) {
-            btn.classList.add('skipped');
-        } else {
-            btn.classList.add('not-answered');
-        }
+        btn.className = 'btn btn-sm mx-1 mb-1';
+        if (i === currentIndex) btn.classList.add('btn-light', 'border-primary', 'text-primary');
+        else if (answers[qid]) btn.classList.add('btn-success', 'text-white');
+        else if (visited[i]) btn.classList.add('btn-danger', 'text-white');
+        else btn.classList.add('btn-secondary', 'text-white');
     });
 }
 
 function renderQuestion() {
     visited[currentIndex] = true;
+    localStorage.setItem('visited', JSON.stringify(visited));
+    
     const q = questions[currentIndex];
-    const saved = answers[q.id] ?? '';
-    let html = `<p class="fw-bold">Question ${currentIndex+1}</p><p>${q.question_text}</p>`;
-
+    const saved = answers[q.id] || '';
+    let html = `<p class="fw-bold">Question ${currentIndex + 1}</p><p>${q.question_text}</p>`;
+    
     if (q.question_type === 'text') {
-        html += `<input id="answerInput" class="form-control" value="${saved}">`;
-    } else if (q.question_type === 'multiple_choice') {
-        let opts = Array.isArray(q.options) ? q.options : JSON.parse(q.options || '[]');
+        html += `<input id="answerInput" class="form-control" value="${saved}" oninput="saveAnswer()">`;
+    } else {
+        const opts = Array.isArray(q.options) ? q.options : JSON.parse(q.options || '[]');
         opts.forEach(opt => {
             html += `<div class="form-check">
-            <input class="form-check-input" type="radio" name="answer" value="${opt}" ${saved===opt?'checked':''}>
-            <label class="form-check-label">${opt}</label>
-            </div>`;
+                        <input class="form-check-input" type="radio" name="answer" value="${opt}" 
+                        ${saved === opt ? 'checked' : ''} onchange="saveAnswer()">
+                        <label class="form-check-label">${opt}</label>
+                     </div>`;
         });
     }
-
     questionContainer.innerHTML = html;
     prevBtn.disabled = currentIndex === 0;
-    nextBtn.textContent = currentIndex === questions.length-1 ? 'Finish' : 'Next';
-
+    nextBtn.textContent = currentIndex === questions.length - 1 ? 'Finish' : 'Next';
     updateQuizNav();
 }
 
@@ -209,79 +396,89 @@ function saveAnswer() {
     const text = document.getElementById('answerInput');
     const radio = document.querySelector('input[name="answer"]:checked');
     answers[q.id] = text ? text.value.trim() : (radio ? radio.value : '');
+    localStorage.setItem('answers', JSON.stringify(answers));
 }
 
-prevBtn.onclick = () => {
-    saveAnswer();
-    if(currentIndex > 0){
-        currentIndex--;
-        renderQuestion();
-    }
+prevBtn.onclick = () => { 
+    saveAnswer(); 
+    if(currentIndex > 0) { 
+        currentIndex--; 
+        localStorage.setItem('currentIndex', currentIndex);
+        renderQuestion(); 
+    } 
 };
-nextBtn.onclick = () => {
-    saveAnswer();
-    if (currentIndex < questions.length-1) {
-        currentIndex++;
-        renderQuestion();
-    } else showReviewPanel();
+
+nextBtn.onclick = () => { 
+    saveAnswer(); 
+    if(currentIndex < questions.length - 1) { 
+        currentIndex++; 
+        localStorage.setItem('currentIndex', currentIndex);
+        renderQuestion(); 
+    } else { 
+        showReviewPanel(); 
+    } 
 };
 
 function showReviewPanel() {
     reviewTableBody.innerHTML = '';
-    questions.forEach((q,i) => {
-        reviewTableBody.innerHTML += `<tr><td>Q${i+1}</td><td>${answers[q.id] ? 'Answered' : 'Not Answered'}</td></tr>`;
+    questions.forEach((q, i) => { 
+        reviewTableBody.innerHTML += `<tr><td>Q${i+1}</td><td>${answers[q.id] ? 'Answered' : 'Not Answered'}</td></tr>`; 
     });
-    assessmentDiv.style.display = 'none';
-    reviewPanel.style.display = 'block';
+    assessmentDiv.classList.add('d-none');
+    reviewPanel.classList.remove('d-none');
 }
 
-goBackBtn.onclick = () => {
-    reviewPanel.style.display = 'none';
-    assessmentDiv.style.display = 'block';
-    renderQuestion();
+document.getElementById('goBackBtn').onclick = () => { 
+    reviewPanel.classList.add('d-none'); 
+    assessmentDiv.classList.remove('d-none'); 
+    renderQuestion(); 
 };
 
-function startTimer() {
-    timer = setInterval(() => {
-        timeLeft--;
-        timerSpan.textContent =
-            String(Math.floor(timeLeft/60)).padStart(2,'0') + ':' +
-            String(timeLeft%60).padStart(2,'0');
-        if (timeLeft <= 0) submitAssessment();
-    }, 1000);
+function clearStorage() {
+    localStorage.removeItem('timeLeft');
+    localStorage.removeItem('answers');
+    localStorage.removeItem('currentIndex');
+    localStorage.removeItem('visited');
+    localStorage.removeItem('assessmentStarted');
+    localStorage.removeItem('violations');
+    sessionStorage.removeItem('assessment_questions');
 }
 
-function startAutoSave() {
-    autoSaveTimer = setInterval(() => {
-        saveAnswer();
-        fetch("{{ route('assessment.autosave') }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type':'application/json',
-                'X-CSRF-TOKEN':'{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ answers })
-        });
-    }, 30000);
-}
-
-submitBtn.onclick = submitAssessment;
-
-function submitAssessment() {
+function submitAssessment(auto = false) {
+    saveAnswer();
     clearInterval(timer);
-    clearInterval(autoSaveTimer);
+    const finalAnswers = answers;
+    
+    // Clear storage so the next attempt starts fresh
+    clearStorage();
 
     fetch("{{ route('assessment.submit') }}", {
         method: 'POST',
-        headers: {
-            'Content-Type':'application/json',
-            'X-CSRF-TOKEN':'{{ csrf_token() }}'
-        },
-        body: JSON.stringify({ answers })
-    }).then(() => {
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: JSON.stringify({ answers: finalAnswers })
+    }).finally(() => {
         window.location.href = "{{ route('assessment.results') }}";
     });
 }
+
+function autoSubmitAssessment() {
+    saveAnswer();
+    clearInterval(timer);
+    violationWarning.textContent = 'Maximum violations reached! Submitting...';
+    violationWarning.style.background = '#dc3545';
+    violationWarning.style.display = 'block';
+    
+    const finalAnswers = answers;
+    clearStorage();
+
+    fetch("{{ route('assessment.submit') }}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: JSON.stringify({ answers: finalAnswers })
+    }).finally(() => window.location.href = "{{ route('assessment.results') }}");
+}
+
+document.getElementById('submitBtn').onclick = () => submitAssessment();
 </script>
 
 </body>

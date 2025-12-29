@@ -12,8 +12,7 @@ class ResumeUploadController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth'); // Require login
-        $this->middleware('role:user'); // Only users can access
+        $this->middleware('auth');       // Require login
     }
 
     // Show the resume upload page
@@ -33,19 +32,27 @@ class ResumeUploadController extends Controller
         $file = $request->file('resume');
         $originalName = $file->getClientOriginalName();
 
-        // 2️⃣ Store PDF in public/resumes
-        $path = $file->storeAs('resumes', $originalName, 'public'); 
-        // Stored in storage/app/public/resumes, publicly accessible via /storage/resumes/filename
+        // 2️⃣ Compute SHA256 hash of uploaded file
+        $fileHash = hash_file('sha256', $file->getRealPath());
 
-        // 3️⃣ Send file to FastAPI container for OCR
-        // $fastApiUrl = 'http://fastapi-container:8081/extract-resume'; // Docker container name
-       $fastApiUrl = env('RESUME_SERVICE');
+        // 3️⃣ Check for duplicates by other users
+        $duplicate = Resume::where('file_hash', $fileHash)
+            ->where('user_id', '!=', auth()->id())
+            ->first();
 
-        $response = Http::timeout(120)->attach(
-            'file',
-            file_get_contents($file->getRealPath()), 
-            $originalName
-        )->post($fastApiUrl);
+        if ($duplicate) {
+            return back()->with('error', 'This resume has already been uploaded by another user.');
+        }
+
+        // 4️⃣ Store PDF in public/resumes
+        $path = $file->storeAs('resumes', $originalName, 'public');
+
+        // 5️⃣ Send file to FastAPI container for OCR
+        $fastApiUrl = env('RESUME_SERVICE'); // Set in .env
+
+        $response = Http::timeout(120)
+            ->attach('file', file_get_contents($file->getRealPath()), $originalName)
+            ->post($fastApiUrl);
 
         if ($response->failed()) {
             return back()->with('error', 'Failed to process resume. FastAPI is unreachable.');
@@ -59,7 +66,7 @@ class ResumeUploadController extends Controller
 
         $extractedText = $result['text'];
 
-        // 4️⃣ Keyword matching
+        // 6️⃣ Keyword matching
         $keywords = Keyword::all();
         $matchedKeywords = [];
 
@@ -74,23 +81,45 @@ class ResumeUploadController extends Controller
         $passPercentage = $totalKeywords > 0 ? round(($matchedCount / $totalKeywords) * 100, 2) : 0;
         $status = $passPercentage >= 50 ? 'valid' : 'invalid';
 
-        // 5️⃣ Save record to database
+        // 7️⃣ Save resume record
         Resume::create([
-        'user_id' => auth()->id(),
-        'file_path' => $path,
-        'status' => $status,
-        'percentage' => $passPercentage,
-        'matched_keywords' => json_encode($matchedKeywords), // ✅ Must match DB column
-        'extracted_text' => $extractedText,
-    ]);
+            'user_id' => auth()->id(),
+            'file_path' => $path,
+            'status' => $status,
+            'percentage' => $passPercentage,
+            'matched_keywords' => json_encode($matchedKeywords),
+            'extracted_text' => $extractedText,
+            'file_hash' => $fileHash, // Automatic hash storage
+        ]);
 
-        // 6️⃣ Return results to Blade
+        // 8️⃣ Return results to Blade
         return back()->with('result', [
             'status' => $status,
             'percentage' => $passPercentage,
             'matched_skills' => $matchedKeywords,
         ]);
     }
+
+    public function download($id)
+{
+    $resume = \App\Models\Resume::findOrFail($id);
+    $user = auth()->user();
+
+    if ($user->role !== 'admin' && $resume->user_id !== $user->id) {
+        abort(403, 'Unauthorized');
+    }
+
+    $path = storage_path('app/public/' . $resume->file_path); // <-- use file_path
+
+    if (!file_exists($path)) {
+        abort(404, 'File not found');
+    }
+
+    // Use original filename from path
+    $filename = basename($resume->file_path);
+
+    return response()->download($path, $filename);
+}
 
     // Logout user
     public function logout(Request $request)

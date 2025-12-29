@@ -17,11 +17,12 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
+   protected $fillable = [
+    'name',
+    'email',
+    'role',
+    'is_invited', // ✅ Add this
+];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -32,6 +33,12 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    protected $casts = [
+    'is_invited' => 'boolean',
+    'email_verified_at' => 'datetime',
+];
+
 
     /**
      * Get the attributes that should be cast.
@@ -45,4 +52,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function firstTimeUser(): bool {
+    return $this->role === 'user' && !Resume::where('user_id', $this->id)->exists();
+}
+
 }

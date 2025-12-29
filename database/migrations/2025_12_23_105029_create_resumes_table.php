@@ -19,6 +19,7 @@ return new class extends Migration
         $table->unsignedTinyInteger('percentage'); // pass %
         $table->json('matched_keywords'); // array of matched keywords
         $table->text('extracted_text'); // full text
+        $table->string('file_hash', 64)->nullable();
         $table->timestamps();
     });
     }
