@@ -9,8 +9,6 @@ use App\Models\User;
 /**
  * Class AssessmentResult
  *
- * Represents a user's assessment attempt, including answers, question IDs, and scores.
- *
  * @property int $id
  * @property int $user_id
  * @property array $answers
@@ -18,6 +16,10 @@ use App\Models\User;
  * @property int $total_questions
  * @property int $correct_answers
  * @property int $wrong_answers
+ * @property int $violations
+ * @property bool $is_submitted
+ * @property int|null $time_left
+ * @property \Illuminate\Support\Carbon|null $started_at
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  * @property User $user
@@ -28,8 +30,6 @@ class AssessmentResult extends Model
 
     /**
      * The attributes that are mass assignable.
-     *
-     * @var array<int,string>
      */
     protected $fillable = [
         'user_id',
@@ -38,12 +38,14 @@ class AssessmentResult extends Model
         'total_questions',
         'correct_answers',
         'wrong_answers',
+        'violations',        // ✅ added
+        'is_submitted',
+        'time_left',
+        'started_at',
     ];
 
     /**
      * The attributes that should be cast to native types.
-     *
-     * @var array<string,string>
      */
     protected $casts = [
         'answers' => 'array',
@@ -51,12 +53,14 @@ class AssessmentResult extends Model
         'total_questions' => 'integer',
         'correct_answers' => 'integer',
         'wrong_answers' => 'integer',
+        'violations' => 'integer',   // ✅ added
+        'is_submitted' => 'boolean',
+        'time_left' => 'integer',
+        'started_at' => 'datetime',
     ];
 
     /**
      * Get the user that owns this assessment result.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function user()
     {

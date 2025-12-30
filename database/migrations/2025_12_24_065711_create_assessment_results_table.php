@@ -16,6 +16,10 @@ return new class extends Migration
             $table->integer('total_questions')->default(0);
             $table->integer('correct_answers')->default(0);
             $table->integer('wrong_answers')->default(0);
+            $table->integer('violations')->default(0);
+            $table->boolean('is_submitted')->default(false);
+            $table->integer('time_left')->nullable();
+            $table->timestamp('started_at')->nullable();
             $table->timestamps();
         });
     }

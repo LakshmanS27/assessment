@@ -53,10 +53,24 @@
         <td><strong>Wrong Answers</strong></td>
         <td>{{ $result->wrong_answers }}</td>
     </tr>
+    
     <tr>
-        <td><strong>Total Score</strong></td>
-        <td>{{ $result->correct_answers }} / {{ $result->total_questions }}</td>
-    </tr>
+    <td><strong>Wrong Answers</strong></td>
+    <td>{{ $result->wrong_answers }}</td>
+</tr>
+<tr>
+    <td><strong>Violations</strong></td>
+    <td>
+        {{ $result->violations }}
+        @if($result->violations >= 3)
+            (Auto-submitted)
+        @endif
+    </td>
+</tr>
+<tr>
+    <td><strong>Total Score</strong></td>
+    <td>{{ $result->correct_answers }} / {{ $result->total_questions }}</td>
+</tr>
 </table>
 
 <!-- ==================== DETAILED ANSWERS ==================== -->

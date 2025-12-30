@@ -4,81 +4,95 @@ use App\Http\Controllers\AssessmentController;
 use App\Http\Controllers\Auth\MicrosoftController;
 use App\Http\Controllers\ResumeUploadController;
 use App\Http\Controllers\AdminInviteController;
+use App\Http\Controllers\AdminQuestionController; 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
-// Homepage
-Route::get('/', fn () => view('welcome'));
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where all the web routes for the application are registered.
+| Routes are grouped by middleware (guest, auth) and role (admin, user).
+|
+*/
 
-// Guest routes
+// -------------------- Public / Guest Routes --------------------
+// Route::get('/', fn () => view('welcome')); // Homepage
+
+// 2. Set your custom home page as the root URL
+
+Route::get('/', function () {
+    return view('welcome');
+})->name('home');
+
+// This is still needed for your login button to work
+Route::get('/login', function () {
+    return view('auth.login'); 
+})->name('login');
+
 Route::middleware('guest')->group(function () {
+    // Login form
     Route::get('/login', [AssessmentController::class, 'showLoginForm'])->name('login');
+
+    // Microsoft OAuth login
     Route::get('/login/microsoft', [MicrosoftController::class, 'redirectToProvider'])->name('login.microsoft');
     Route::get('/login/microsoft/callback', [MicrosoftController::class, 'handleProviderCallback']);
 });
 
-// Authenticated routes
+// -------------------- Authenticated Routes --------------------
 Route::middleware('auth')->group(function () {
 
-    // ---------- Admin ----------
-    Route::get('/dashboard', [AssessmentController::class, 'index'])
-        ->name('dashboard')
-        ->middleware('role:admin');
+    // -------------------- Admin Routes --------------------
+    Route::middleware('role:admin')->group(function () {
 
-    // Admin invite (single email)
-    Route::post('/admin/invite/single', [AdminInviteController::class, 'inviteSingle'])
-        ->name('admin.invite.single')
-        ->middleware('role:admin');
+        // Dashboard
+        Route::get('/dashboard', [AssessmentController::class, 'index'])->name('dashboard');
 
-    // Admin invite (CSV upload)
-    Route::post('/admin/invite/csv', [AdminInviteController::class, 'inviteCsv'])
-        ->name('admin.invite.csv')
-        ->middleware('role:admin');
+        // Invite Users
+        Route::post('/admin/invite/single', [AdminInviteController::class, 'inviteSingle'])->name('admin.invite.single');
+        Route::post('/admin/invite/csv', [AdminInviteController::class, 'inviteCsv'])->name('admin.invite.csv');
 
-    // ---------- User ----------
-    Route::get('/resumeup', [ResumeUploadController::class, 'create'])
-        ->name('resume.upload.form')
-        ->middleware('role:user');
+        // Assessment Results for any user (admin)
+        Route::get('/assessment/results/{id}', [AssessmentController::class, 'viewResult'])->name('assessment.results.view');
 
-    Route::post('/resumeup', [ResumeUploadController::class, 'store'])
-        ->name('resume.upload.store')
-        ->middleware('role:user');
+        // Download assessment report (PDF)
+        Route::get('/assessment/{id}/download', [AssessmentController::class, 'downloadReport'])->name('assessment.download');
 
-    Route::get('/user/dashboard', [AssessmentController::class, 'userDashboard'])
-    ->name('user.dashboard')
-    ->middleware('role:user');
+        // Download user resume
+        Route::get('/resume/{id}/download', [ResumeUploadController::class, 'download'])->name('resume.download');
 
+        // Bulk download all assessment reports + resumes
+        Route::get('/assessment/download-all', [AssessmentController::class, 'bulkDownload'])->name('assessment.bulk.download');
 
-    // ---------- Assessment ----------
-    Route::get('/assessment', [AssessmentController::class, 'show'])
-        ->name('assessment.start');
+        Route::middleware(['auth','role:admin'])->group(function () {
+        Route::post('/admin/questions/upload-csv',
+        [AdminQuestionController::class, 'uploadCsv']
+            )->name('admin.questions.upload');
+        });
+    });
 
-    Route::post('/assessment/autosave', [AssessmentController::class, 'autosave'])
-        ->name('assessment.autosave');
+    // -------------------- User Routes --------------------
+    Route::middleware('role:user')->group(function () {
 
-    Route::post('/assessment/submit', [AssessmentController::class, 'submit'])
-        ->name('assessment.submit');
+        // Resume upload
+        Route::get('/resumeup', [ResumeUploadController::class, 'create'])->name('resume.upload.form');
+        Route::post('/resumeup', [ResumeUploadController::class, 'store'])->name('resume.upload.store');
 
-    // User results (own result)
-    Route::get('/assessment/results', [AssessmentController::class, 'results'])
-        ->name('assessment.results');
+        // User Dashboard
+        Route::get('/user/dashboard', [AssessmentController::class, 'userDashboard'])->name('user.dashboard');
 
-    // Admin view specific result
-    Route::get('/assessment/results/{id}', [AssessmentController::class, 'viewResult'])
-        ->name('assessment.results.view')
-        ->middleware('role:admin');
+        // Assessment routes
+        Route::get('/assessment', [AssessmentController::class, 'show'])->name('assessment.start');
+        Route::post('/assessment/autosave', [AssessmentController::class, 'autosave'])->name('assessment.autosave');
+        Route::post('/assessment/submit', [AssessmentController::class, 'submit'])->name('assessment.submit');
 
-    // Admin download report
-    Route::get('/assessment/{id}/download', [AssessmentController::class, 'downloadReport'])
-        ->name('assessment.download')
-        ->middleware('role:admin');
+        // View assessment results for logged-in user
+        Route::get('/assessment/results', [AssessmentController::class, 'results'])->name('assessment.results');
+    });
 
-    // Admin download resume
-    Route::get('/resume/{id}/download', [ResumeUploadController::class, 'download'])
-    ->name('resume.download')
-    ->middleware('role:admin');
-
-    // Logout
+    // -------------------- Logout Route --------------------
     Route::post('/logout', function () {
         Auth::logout();
         request()->session()->invalidate();

@@ -3,34 +3,30 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Socialite;
-use Auth;
+use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\Resume;
 
 class MicrosoftController extends Controller
 {
-    /**
-     * Redirect the user to Microsoft login page.
-     */
     public function redirectToProvider()
     {
         return Socialite::driver('microsoft')
             ->stateless()
-            ->with(['prompt' => 'select_account']) // ensure account selection
+            ->with(['prompt' => 'login'])
             ->redirect();
     }
 
-    /**
-     * Handle Microsoft callback.
-     * Only invited users can log in.
-     */
     public function handleProviderCallback()
     {
-        $microsoftUser = Socialite::driver('microsoft')->stateless()->user();
+        $microsoftUser = Socialite::driver('microsoft')
+            ->stateless()
+            ->user();
 
         $email = strtolower($microsoftUser->getEmail());
 
-        // 🔒 Check if user exists and is invited
+        // 🔒 Invite-only check
         $user = User::where('email', $email)->first();
 
         if (!$user || !$user->is_invited) {
@@ -42,32 +38,34 @@ class MicrosoftController extends Controller
                 );
         }
 
-        // ✅ Update user details after first login
+        // Update user details
         $user->update([
             'name' => $microsoftUser->getName(),
             'email_verified_at' => now(),
         ]);
 
-        // Log in the user
-        
+        // Login
         Auth::login($user);
 
-        // First-time login: check if resume exists (only for normal users)
-        if ($user->role === 'user') {
-            $resume = \App\Models\Resume::where('user_id', $user->id)->latest()->first();
-
-            if (!$resume) {
-                // First-time login → upload resume
-                return redirect()->route('resume.upload.form');
-            }
-
-            // Returning user → dashboard
-            return redirect()->route('user.dashboard');
-        }
-
-        // Admin → dashboard
+        // ---------- ROLE BASED REDIRECT ----------
         if ($user->role === 'admin') {
             return redirect()->route('dashboard');
         }
+
+        if ($user->role === 'user') {
+            $resume = Resume::where('user_id', $user->id)->latest()->first();
+
+            // First login → Resume Upload
+            if (!$resume) {
+                return redirect()->route('resume.upload.form');
+            }
+
+            // Resume exists (valid or invalid) → Dashboard
+            return redirect()->route('user.dashboard');
+        }
+
+        // Fallback safety
+        Auth::logout();
+        return redirect()->route('login');
     }
 }

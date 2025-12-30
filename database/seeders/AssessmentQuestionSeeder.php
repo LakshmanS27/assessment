@@ -76,7 +76,7 @@ class AssessmentQuestionSeeder extends Seeder
 
             // HTML
             ['question_text' => 'What does HTML stand for?', 'question_type' => 'text', 'correct_answer' => 'HyperText Markup Language'],
-            ['question_text' => 'Which tag is used to create a hyperlink in HTML?', 'question_type' => 'multiple_choice', 'options' => ['<link>','<a>','<href>','<hyperlink>'], 'correct_answer' => '<a>'],
+            ['question_text' => 'Who is making the Web standards?', 'question_type' => 'multiple_choice', 'options' => ['Mozilla','Google','Microsoft','World Wide Web Consortium'], 'correct_answer' => 'World Wide Web Consortium'],
             ['question_text' => 'Which attribute specifies an image source in HTML?', 'question_type' => 'text', 'correct_answer' => 'src'],
 
             // CSS

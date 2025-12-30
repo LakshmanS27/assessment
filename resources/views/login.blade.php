@@ -93,7 +93,7 @@
             <img src="{{ asset('images/logo_sq.png') }}" alt="Company Logo" width="100" class="mx-auto d-block">
         </div>
 
-        <h2 class="login-title">Assessment Management System</h2>
+        <h2 class="login-title">Assessment Portal</h2>
         <p class="login-subtitle">Secure sign-in using your Microsoft account</p>
 
         <!-- Invite Error Alert -->
@@ -112,7 +112,7 @@
 
         <!-- Footer -->
         <div class="footer-text">
-            © {{ date('Y') }} Assessment Platform. All rights reserved.
+            © {{ date('Y') }} SQ1 Security Technologies Pvt Ltd. All rights reserved.
         </div>
     </div>
 </div>
